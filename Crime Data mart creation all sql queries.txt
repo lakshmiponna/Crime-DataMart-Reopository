@@ -1,0 +1,52 @@
+
+--(1)to get distinct states data from staging table to load into dim states table
+SELECT DISTINCT (State)
+FROM   Crime.Source_Data_Staging
+ORDER BY (State) ASC
+
+--(2) update sates id in stage table from dim states
+UPDATE [Crime].[Source_Data_Staging]
+ SET Crime.Source_Data_Staging.StateID = Crime.DimState.StateID
+ FROM Crime.Source_Data_Staging
+ INNER JOIN Crime.DimState
+ ON Crime.Source_Data_Staging.[State] = Crime.DimState.[State]
+
+ ---(3) get distinct cities based on state wise from staging table to load into dimcity
+ SELECT DISTINCT City, StateID
+FROM   Crime.Source_Data_Staging
+ORDER BY City ASC
+
+---(4) update city ID into the stage table from dim city table
+  update [Crime].[Source_Data_Staging]
+  set Crime.Source_Data_Staging.CityID = [dbo].[Crime.DimCity].cityID
+  from [Crime].[Source_Data_Staging] 
+  inner join [dbo].[Crime.DimCity]
+  on Crime.Source_Data_Staging.[City] = [dbo].[Crime.DimCity].[CITY] AND 
+  Crime.Source_Data_Staging.[StateID] = [dbo].[Crime.DimCity].[stateID]
+
+  ---(5) get Distinct year from stage table to load into the dim year table
+  SELECT DISTINCT [Year]
+FROM   Crime.Source_Data_Staging
+ORDER BY [Year]
+
+--(6) load year year data into the dim year and update chinese year column
+ update [Crime].[DimYear]
+ set ChineseNewYear = 'Dog'
+ where [YEAR] = '2006'
+
+ update [Crime].[DimYear]
+ set ChineseNewYear = 'Pig'
+ where [YEAR] = '2007'
+
+ update [Crime].[DimYear]
+ set ChineseNewYear = 'Rat'
+ where [YEAR] = '2008'
+
+ --(7) update year ID into stage table from dim year
+  UPDATE [Crime].[Source_Data_Staging]
+ SET [Crime].[Source_Data_Staging].[YearID] = [Crime].[DimYear].[YearID]
+ FROM [Crime].[Source_Data_Staging]
+ INNER JOIN [Crime].[DimYear]
+ ON [Crime].[Source_Data_Staging].[Year] = [Crime].[DimYear].[YEAR]
+
+ ---(8) finally load data from stage table into fact crime table
